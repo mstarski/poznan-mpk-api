@@ -9,13 +9,13 @@ $stops_data = $ztm_data['stops_data']
 $working_line_numbers = $ztm_data['working_line_numbers']
 
 def ztm_find_route(start, stop)
-	line_number_nodes = {}
+	line_number_nodes = Hash.new
 	#Map working line numbers to graph nodes
 	$working_line_numbers.each {|number|
 		line_number_nodes[number] = Node.new(number)
 	}
 
-	stop_nodes = {}
+	stop_nodes = Hash.new
 	#Map stops to graph nodes
 	$stops_data.each {|stop_code, data|
 		stop_node = Node.new(stop_code)
@@ -39,4 +39,13 @@ end
 start = 'SOB42'
 stop = 'RRAT42'
 
-ztm_find_route(start, stop)
+name_to_code = Hash.new
+$stops_data.each {|code, data|
+	if name_to_code[data['name']].nil?
+		name_to_code[data['name']] = [code]
+	else
+		name_to_code[data['name']] << code
+	end
+}
+
+puts name_to_code
