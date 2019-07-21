@@ -8,6 +8,16 @@ $ztm_data = JSON.load(File.new('./ztm_data.json'))
 $stops_data = $ztm_data['stops_data']
 $working_line_numbers = $ztm_data['working_line_numbers']
 
+#Map names to code for user to be able to provide real stop names
+$name_to_code = Hash.new
+$stops_data.each {|code, data|
+	if $name_to_code[data['name']].nil?
+		$name_to_code[data['name']] = [code]
+	else
+		$name_to_code[data['name']] << code
+	end
+}
+
 def ztm_find_route(start, stop)
 	line_number_nodes = Hash.new
 	#Map working line numbers to graph nodes
@@ -32,20 +42,16 @@ def ztm_find_route(start, stop)
 
 	graph = Graph.new
 	graph.root = stop_nodes[start]
-
 	pp bfs(graph, stop)
 end
 
-start = 'SOB42'
-stop = 'RRAT42'
+def main(start, stop)
+	$name_to_code[start].each {|start_code|
+		$name_to_code[stop].each {|stop_code|
+			ztm_find_route(start_code, stop_code)
+		}
+	}
+end
 
-name_to_code = Hash.new
-$stops_data.each {|code, data|
-	if name_to_code[data['name']].nil?
-		name_to_code[data['name']] = [code]
-	else
-		name_to_code[data['name']] << code
-	end
-}
-
-puts name_to_code
+#Wersje tego samego przystanku mają dodaną linię, która nie jedzie przez tą wersje (patrz. 12)
+main('Dworzec Zachodni', 'Rondo Rataje')
