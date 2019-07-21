@@ -5,7 +5,10 @@ require 'open-uri'
 require 'json'
 require 'pp'
 
-ztm_data = {}
+ztm_data = {
+	:stops_data => {},
+	:working_line_numbers => []
+}
 
 domain = "http://www.mpk.poznan.pl"
 uri = "#{domain}/rozklad-jazdy"
@@ -30,18 +33,19 @@ line_links.each { |line_link|
 			stop_code = stop['href'].split('/')[4]
 			stop_name = stop.text
 
-			if ztm_data[stop_code].nil? then
-				ztm_data[stop_code] = {
+			if ztm_data[:stops_data][stop_code].nil? then
+				ztm_data[:stops_data][stop_code] = {
 					:name => stop_name,
 					:lines => [line_number]
 				}
 			else
-				unless ztm_data[stop_code][:lines].include? line_number
-					ztm_data[stop_code][:lines] << line_number
+				unless ztm_data[:stops_data][stop_code][:lines].include? line_number
+					ztm_data[:stops_data][stop_code][:lines] << line_number
 				end
 			end
 		}
 	}
+	ztm_data[:working_line_numbers] << line_number
 }
 
 #Write data to the file
@@ -50,4 +54,4 @@ File.open("ztm_data.json", 'w') { |f|
 	f.write(ztm_data.to_json)
 }
 
-puts "Success."
+puts "Success, data saved to ztm_data.json"
