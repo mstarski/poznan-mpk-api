@@ -14,5 +14,4 @@ class Node
 		@edges.push(node)
 		node.edges.push(self)
 	end
-
 end
