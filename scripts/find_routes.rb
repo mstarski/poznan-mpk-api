@@ -42,33 +42,32 @@ module FindRoute
         end
 
         private 
-
-        def ztm_find_routes(start, stop)
-            line_number_nodes = Hash.new
-            #Map working line numbers to graph nodes
-            $working_line_numbers.each {|number|
-                line_number_nodes[number] = Node.new(number)
-            }
-
-            stop_nodes = Hash.new
-            #Map stops to graph nodes
-            $stops_data.each {|stop_code, data|
-                stop_node = Node.new(stop_code)
-
-                data['lines'].each {|line|
-                    stop_node.add_edge(line_number_nodes[line])
+            def ztm_find_routes(start, stop)
+                line_number_nodes = Hash.new
+                #Map working line numbers to graph nodes
+                $working_line_numbers.each {|number|
+                    line_number_nodes[number] = Node.new(number)
                 }
-                stop_nodes[stop_code] = stop_node
-            }
 
-            #Reverse nodes so the furthest one is not at the beginning
-            line_number_nodes.each {|key, value|
-                value.edges.reverse!
-            }
+                stop_nodes = Hash.new
+                #Map stops to graph nodes
+                $stops_data.each {|stop_code, data|
+                    stop_node = Node.new(stop_code)
 
-            graph = Graph.new
-            graph.root = stop_nodes[start]
-            return bfs(graph, stop)
-        end
+                    data['lines'].each {|line|
+                        stop_node.add_edge(line_number_nodes[line])
+                    }
+                    stop_nodes[stop_code] = stop_node
+                }
+
+                #Reverse nodes so the furthest one is not at the beginning
+                line_number_nodes.each {|key, value|
+                    value.edges.reverse!
+                }
+
+                graph = Graph.new
+                graph.root = stop_nodes[start]
+                return bfs(graph, stop)
+            end
     end
 end
