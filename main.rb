@@ -28,8 +28,9 @@ def ztm_find_route(start, stop)
 	stop_nodes = Hash.new
 	#Map stops to graph nodes
 	$stops_data.each {|stop_code, data|
-		stop_node = Node.new(stop_code)
-		data['lines'].each {|line|
+        stop_node = Node.new(stop_code)
+
+        data['lines'].each {|line|
 			stop_node.add_edge(line_number_nodes[line])
 		}
 		stop_nodes[stop_code] = stop_node
@@ -42,16 +43,28 @@ def ztm_find_route(start, stop)
 
 	graph = Graph.new
 	graph.root = stop_nodes[start]
-	pp bfs(graph, stop)
+	return bfs(graph, stop)
 end
 
 def main(start, stop)
-	$name_to_code[start].each {|start_code|
-		$name_to_code[stop].each {|stop_code|
-			ztm_find_route(start_code, stop_code)
+    routes = []
+    current_route = []
+    $name_to_code[start].each {|start_code|
+        $name_to_code[stop].each {|stop_code|
+            current_route = []
+            ztm_find_route(start_code, stop_code).each_with_index {|element, index|
+                if index % 2 == 0
+                    current_route << $stops_data[element]['name']
+                else
+                    current_route << element
+                end
+            }
+            unless routes.include? current_route 
+                routes << current_route 
+            end
 		}
-	}
+    }
+    pp routes
 end
 
-#Wersje tego samego przystanku mają dodaną linię, która nie jedzie przez tą wersje (patrz. 12)
-main('Dworzec Zachodni', 'Rondo Rataje')
+main('Arciszewskiego', 'Rondo Nowaka-Jeziorańskiego')
