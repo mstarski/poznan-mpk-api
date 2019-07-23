@@ -67,4 +67,4 @@ def main(start, stop)
     pp routes
 end
 
-main('Piątkowska', 'Rondo Nowaka-Jeziorańskiego')
+main('Ogrody', 'Poznańska')
