@@ -30,8 +30,9 @@ module Timetable
                 }
             end
 
-            def get_nearest_arrival(link, time=[Time.new.hour, Time.new.min])
-                doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
+            def get_nearest_arrival(link, time=[Time.new.hour, Time.new.min], weekday=Time.new.wday)
+              doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
+                return weekday, time
             end
     end
 end
