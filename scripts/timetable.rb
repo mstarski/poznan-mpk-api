@@ -13,26 +13,17 @@ module Timetable
         private 
             def get_departure_info_link(from, to, line)
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl/component/transport/#{line}"))
+                doc.css(".FromTo").remove
                 directions = ['left', 'right']
 
                 directions.each {|direction|
                     route = doc.css("#box_timetable_#{direction} a")
-                    route.each {|stop|
-                        found = nil
-                        stop_link = stop['href']
-                        stop_name = stop.text
-                        if stop_name == from && found.nil?
-                            return stop_link
-                        elsif stop_name == to 
-                            found = stop_name
-                        end
-                    }
+                    #TODO DOKONCZYC TO JAK NIE BEDE MIAL LAGA MÓZGU
                 }
             end
 
             def get_nearest_arrival(link, time=[Time.new.hour, Time.new.min], weekday=Time.new.wday)
-              doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
-                return weekday, time
+              p link
             end
     end
 end
