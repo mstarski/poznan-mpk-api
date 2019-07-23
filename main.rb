@@ -18,7 +18,7 @@ $stops_data.each {|code, data|
 	end
 }
 
-def ztm_find_route(start, stop)
+def ztm_find_routes(start, stop)
 	line_number_nodes = Hash.new
 	#Map working line numbers to graph nodes
 	$working_line_numbers.each {|number|
@@ -52,7 +52,7 @@ def main(start, stop)
     $name_to_code[start].each {|start_code|
         $name_to_code[stop].each {|stop_code|
             current_route = []
-            ztm_find_route(start_code, stop_code).each_with_index {|element, index|
+            ztm_find_routes(start_code, stop_code).each_with_index {|element, index|
                 if index % 2 == 0
                     current_route << $stops_data[element]['name']
                 else
