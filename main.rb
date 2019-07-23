@@ -1,10 +1,10 @@
-require_relative('./graph')
-require_relative('./node')
-require_relative('./traverse')
+require_relative('./data-structures/graph')
+require_relative('./data-structures/node')
+require_relative('./scripts/traverse')
 require 'json'
 require 'pp'
 
-$ztm_data = JSON.load(File.new('./ztm_data.json'))
+$ztm_data = JSON.load(File.new('./data/ztm_data.json'))
 $stops_data = $ztm_data['stops_data']
 $working_line_numbers = $ztm_data['working_line_numbers']
 
@@ -67,4 +67,4 @@ def main(start, stop)
     pp routes
 end
 
-main('Arciszewskiego', 'Rondo Nowaka-Jeziorańskiego')
+main('Piątkowska', 'Rondo Nowaka-Jeziorańskiego')
