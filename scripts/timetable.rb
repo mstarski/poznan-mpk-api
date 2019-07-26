@@ -5,8 +5,9 @@ require 'pp'
 module Timetable
     class << self
 
-        def get_time(route)
-
+        def get_time(from, to, line)
+            link = get_departure_info_link(from, to, line)
+            return get_nearest_arrival(link)
         end
 
         private 
@@ -72,6 +73,8 @@ module Timetable
                 hour_offset -= 1
                 unless hour_offset == 0 
                     nearest_arrival = "#{time[0] + hour_offset}:#{minutes[0]}"
+                else
+                    nearest_arrival = "#{time[0]}:#{minutes[0]}"
                 end
 
                 return nearest_arrival
