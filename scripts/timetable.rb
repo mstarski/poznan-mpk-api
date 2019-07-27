@@ -5,9 +5,9 @@ require 'pp'
 module Timetable
     class << self
 
-        def get_time(from, to, line)
+        def get_time(from, to, line, relative_to)
             link = get_departure_info_link(from, to, line) 
-            return get_nearest_arrival(link, to)
+            return get_nearest_arrival(link, relative_to)
         end
 
         private 
@@ -36,13 +36,19 @@ module Timetable
             def get_nearest_arrival(link, relative_to=nil, time=Time.new, weekday=Time.new.wday)
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
+                stop_name = doc.css('#MpkThisStop').text
                 unless relative_to.nil?
                     fixed_time = stops_eta_timetable.find {|stop|
                         eta, name = stop.text.delete!("\n").split("-")
-                        name == relative_to
+                        name == relative_to['stop_name']
                     }
+
                     fixed_time = fixed_time.text.delete!("\n").split("-")[0].to_i
-                    time = time + (fixed_time * 60)
+
+                    relative_hour_count = (time.hour - relative_to[:hour]).abs
+                    relative_minutes_count = (time.min + relative_to[:minutes].to_i).abs
+                    
+                    time = time + (relative_hour_count * 60 * 60) + (relative_minutes_count * 60) + (fixed_time * 60)
                 end
 
                 time = [time.hour, time.min]
@@ -112,15 +118,24 @@ module Timetable
                     index += 6 
                     hour_offset += 1
                 end
-                
-                if initial_weekday != weekday
-                    return "No arrivals today but we've found one on #{day_num_to_name[weekday.to_i]}: #{alt_hours_counter}:#{minutes}"
-                end
 
-                unless hour_offset == 0 
-                    return "#{time[0] + hour_offset}:#{minutes}"
+               
+                if initial_weekday != weekday
+                    return {
+                        :day => day_num_to_name[weekday.to_i],
+                        :hour => alt_hours_counter,
+                        :minutes => minutes,
+                        :is_today => false,
+                        :stop_name => stop_name
+                    }
                 else
-                    return "#{time[0]}:#{minutes}"
+                    return {
+                        :day => day_num_to_name[weekday.to_i],
+                        :hour => time[0] + hour_offset,
+                        :minutes => minutes,
+                        :is_today => true,
+                        :stop_name => stop_name
+                    }
                 end
             end
     end
