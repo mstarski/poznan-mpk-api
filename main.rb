@@ -17,20 +17,17 @@ routes.each {|route|
             to = slice[2]
             break if from.nil? || to.nil? || line.nil?
             transfer_checkpoint = Timetable::get_time(from, to, line, transfer_checkpoint)
-            puts "#{from} => #{to} (#{line})", transfer_checkpoint
-
             from = to 
         else
             to = slice[1]
             line = slice[0]
             break if from.nil? || to.nil? || line.nil?
             transfer_checkpoint = Timetable::get_time(from, to, line, transfer_checkpoint)
-            puts "#{from} => #{to} (#{line})", transfer_checkpoint
         end
+
+        puts transfer_checkpoint
         i += 1
     }
-    p "Dest: #{route[route.length - 1]}"
-    p "============================="
 }
 
 

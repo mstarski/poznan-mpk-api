@@ -7,7 +7,12 @@ module Timetable
 
         def get_time(from, to, line, relative_to)
             link = get_departure_info_link(from, to, line) 
-            return get_nearest_arrival(link, relative_to)
+            result = get_nearest_arrival(link, relative_to)
+            
+            result[:line] = line
+            result[:dest] = to
+
+            return result
         end
 
         private 
@@ -130,6 +135,7 @@ module Timetable
                     #hour offset changes when we go past searched hour (there are no departures at given hour anymore)
                     hour_offset += 1
                 end
+
                 #If there are no departures at given day any more we look at the next one and then response changes a bit
                 if initial_weekday != weekday
                     return {
