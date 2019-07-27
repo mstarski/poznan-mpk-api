@@ -33,10 +33,15 @@ module Timetable
                 }
             end
 
-            def get_nearest_arrival(link, time=[Time.new.hour, Time.new.min], weekday=Time.new.wday)
+            def get_nearest_arrival(link, relative_to=nil, time=[Time.new.hour, Time.new.min], weekday=Time.new.wday)
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
+                stops_eta_timetable = doc.css('.timetable td.Left')
+                unless relative_to.nil?
+                    puts stops_eta_timetable.text
+                end
+
                 #Remove unnecessary nodes from the dom
-                doc.css('.timetable td.Left').remove
+                stops_eta_timetable.remove
 
                 html_timetable = doc.css('.MpkTimetableRow > td')
                 #---html_timetable array format---
