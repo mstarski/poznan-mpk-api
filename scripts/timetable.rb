@@ -35,22 +35,30 @@ module Timetable
 
             def get_nearest_arrival(link, relative_to=nil, time=Time.new, weekday=Time.new.wday)
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
+
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
                 stop_name = doc.css('#MpkThisStop').text
+
+                #If we transfer, we have to adjust the next stop's arrival to be in time.
                 unless relative_to.nil?
+                    #Retrieve how much time it takes to go from start to stop
                     fixed_time = stops_eta_timetable.find {|stop|
+                        #Get rid of \n and split string into [time_it_takes, stop_name]
                         eta, name = stop.text.delete!("\n").split("-")
+                        #Find the stop that we are looking for 
                         name == relative_to['stop_name']
                     }
-
+                    #Extract minutes
                     fixed_time = fixed_time.text.delete!("\n").split("-")[0].to_i
-
-                    relative_hour_count = (time.hour - relative_to[:hour]).abs
-                    relative_minutes_count = (time.min + relative_to[:minutes].to_i).abs
-                    
-                    time = time + (relative_hour_count * 60 * 60) + (relative_minutes_count * 60) + (fixed_time * 60)
+                    #Last stop of the route doesn't have minutes written next to it so we cover that case manually: stop before time + 2 min
+                    if fixed_time == 0
+                        fixed_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
+                    end
+                    #Fix time object to have needed properties (set hours, minutes)
+                    time = fix_time(relative_to[:hour], relative_to[:minutes], time, fixed_time)
                 end
-
+               
+                #We only need hours and minutes here
                 time = [time.hour, time.min]
 
                 #Remove unnecessary nodes from the dom
@@ -83,6 +91,7 @@ module Timetable
                     }
                 }
 
+                #We are getting departure minutes from given hour and day here
                 get_minutes = Proc.new { |html_timetable, index, shift| 
                     html_timetable[index + shift].text.split(" ")
                 }
@@ -109,34 +118,48 @@ module Timetable
                         next
                     end
 
+                    #Prevent from getting a departure that is in the past
                     minutes = get_minutes.call(html_timetable, index, day_data[:index_shift]).find {|m|
                         m.to_i > time[1].to_i
                     }
 
                     break unless minutes.nil?
 
+                    #index adjustments
                     index += 6 
+                    #hour offset changes when we go past searched hour (there are no departures at given hour anymore)
                     hour_offset += 1
                 end
-
-               
+                #If there are no departures at given day any more we look at the next one and then response changes a bit
                 if initial_weekday != weekday
                     return {
                         :day => day_num_to_name[weekday.to_i],
                         :hour => alt_hours_counter,
                         :minutes => minutes,
                         :is_today => false,
-                        :stop_name => stop_name
+                        :stop_name => stop_name,
                     }
+                #Here's the response when everything went OK 
                 else
                     return {
                         :day => day_num_to_name[weekday.to_i],
                         :hour => time[0] + hour_offset,
                         :minutes => minutes,
                         :is_today => true,
-                        :stop_name => stop_name
+                        :stop_name => stop_name,
                     }
                 end
+            end
+
+            #We do it like this to preserve time object properties (i.e it will change year, day etc when we add minutes)
+            #offset is given in minutes
+            def fix_time(hour, minutes, time, offset)
+                loop do
+                    time += 240
+                    break if time.hour >= hour.to_i && time.min >= minutes.to_i
+                end
+
+                return time + (offset * 60)
             end
     end
 end
