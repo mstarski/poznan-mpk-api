@@ -1,3 +1,4 @@
+require_relative('./find_routes.rb')
 require 'nokogiri'
 require 'open-uri'
 require 'pp'
@@ -5,17 +6,47 @@ require 'pp'
 module Timetable
     class << self
 
-        def get_time(from, to, line, relative_to)
-            link = get_departure_info_link(from, to, line) 
-            result = get_nearest_arrival(link, relative_to)
+        def routes(from, to)
+            routes = FindRoute::route(from, to)
+            routes.each {|route|
+                #Stop -> #Line -> #Stop ...
+                i = 0
+                from = nil
+                to = nil
+                line = nil
+                transfer_checkpoint = nil
+                route.each_slice(3) {|slice|
+                    if i % 2 == 0
+                        from = slice[0]
+                        line = slice[1]
+                        to = slice[2]
+                        break if from.nil? || to.nil? || line.nil?
+                        transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
+                        from = to 
+                    else
+                        to = slice[1]
+                        line = slice[0]
+                        break if from.nil? || to.nil? || line.nil?
+                        transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
+                    end
 
-            result[:line] = line
-            result[:dest] = to
-
-            return result
+                    puts transfer_checkpoint
+                    i += 1
+                }
+            }
         end
 
         private 
+            def get_time(from, to, line, relative_to)
+                link = get_departure_info_link(from, to, line) 
+                result = get_nearest_arrival(link, relative_to)
+
+                result[:line] = line
+                result[:dest] = to
+
+                return result
+            end
+
             def get_departure_info_link(from, to, line)
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl/component/transport/#{line}"))
                 doc.css(".FromTo").remove
@@ -111,6 +142,7 @@ module Timetable
                 hour_offset = 0
                 minutes = nil
 
+                #TODO think about refactor this block
                 loop do
                     day_index = weekday % 6 == 0 ? weekday.to_s : "1"
                     day_data = week_metadata[day_index.to_sym]
@@ -128,13 +160,14 @@ module Timetable
                         m.to_i > time[1].to_i
                     }
 
-                    break unless minutes.nil?
+                    if minutes.nil?
+                        index += 6
+                        hour_offset += 1
+                        minutes = get_minutes.call(html_timetable, index, day_data[:index_shift])[0]
+                    end
 
-                    #index adjustments
-                    index += 6 
-                    #hour offset changes when we go past searched hour (there are no departures at given hour anymore)
-                    hour_offset += 1
-                end
+                    break unless minutes.nil?
+               end
 
                 #If there are no departures at given day any more we look at the next one and then response changes a bit
                 if initial_weekday != weekday

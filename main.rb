@@ -1,33 +1,7 @@
 require_relative('./scripts/find_routes.rb')
 require_relative('./scripts/timetable.rb')
 
-routes = FindRoute::route('Arciszewskiego', 'Szymanowskiego')
-
-routes.each {|route|
-    #Stop -> #Line -> #Stop ...
-    i = 0
-    from = nil
-    to = nil
-    line = nil
-    transfer_checkpoint = nil
-    route.each_slice(3) {|slice|
-        if i % 2 == 0
-            from = slice[0]
-            line = slice[1]
-            to = slice[2]
-            break if from.nil? || to.nil? || line.nil?
-            transfer_checkpoint = Timetable::get_time(from, to, line, transfer_checkpoint)
-            from = to 
-        else
-            to = slice[1]
-            line = slice[0]
-            break if from.nil? || to.nil? || line.nil?
-            transfer_checkpoint = Timetable::get_time(from, to, line, transfer_checkpoint)
-        end
-
-        puts transfer_checkpoint
-        i += 1
-    }
-}
+#Example usage
+Timetable::routes('Arciszewskiego', 'Szymanowskiego')
 
 
