@@ -6,7 +6,7 @@ module Timetable
     class << self
 
         def get_time(from, to, line)
-            link = get_departure_info_link(from, to, line)
+            link = get_departure_info_link(from, to, line) 
             return get_nearest_arrival(link)
         end
 
@@ -40,8 +40,8 @@ module Timetable
 
                 html_timetable = doc.css('.MpkTimetableRow > td')
                 #---html_timetable array format---
-                #Weekdays hour
-                #Weekdays minutes
+                #Weekdays hour 
+                #Weekdays minutes 
 
                 #Saturdays hour
                 #Saturdays minutes
@@ -49,35 +49,63 @@ module Timetable
                 #Sundays hour
                 #Sundays hours
 
+                day_num_to_name = ["Sunday", "Monday", "Tuesday", "Thursday", "Wednesday", "Friday", "Saturday"]
+                week_metadata = {
+                    "0": {
+                        name: 'Sundays',
+                        index_shift: 5,
+                    },
+                    "6": {
+                        name: 'Saturdays',
+                        index_shift: 3
+                    },
+                    "1": {
+                        name: 'Weekdays',
+                        index_shift: 1
+                    }
+                }
+
+                get_minutes = Proc.new { |html_timetable, index, shift| 
+                    html_timetable[index + shift].text.split(" ")
+                }
+
                 #Find the weekdays hour index - html_timetable[index +1/+3/+5] are the weekdays/saturdays/sundays minutes
                 index = html_timetable.find_index {|cell| 
                     cell.text == time[0].to_s
                 }
 
+                initial_weekday = weekday
+                alt_hours_counter = 3 #It is used to count what hour is being checked when the day changes
                 minutes = []
                 hour_offset = 0
+
                 while minutes.length == 0 do
-                    #If it's sunday
-                    if weekday == 0
-                        minutes = html_timetable[index + 5].text.split(" ")
-                    #Else if it's saturday
-                    elsif weekday == 6
-                        minutes = html_timetable[index + 3].text.split(" ")
-                    else
-                        minutes = html_timetable[index + 1].text.split(" ")
+                    day_index = weekday % 6 == 0 ? weekday.to_s : "1"
+                    day_data = week_metadata[day_index.to_sym]
+
+                    #If there are no arivals the given day, check the next one
+                    if index + day_data[:index_shift] >= html_timetable.length
+                        weekday = (weekday + 1) % 7
+                        index = 0                        
+                        alt_hours_counter = (alt_hours_counter + 1) % 23
+                        next
                     end
+
+                    minutes = get_minutes.call(html_timetable, index, day_data[:index_shift])
                     index += 6 
                     hour_offset += 1
+                end
+                
+                if initial_weekday != weekday
+                    return "No arrivals today but we've found one on #{day_num_to_name[weekday.to_i]}: #{alt_hours_counter}:#{minutes[0]}"
                 end
 
                 hour_offset -= 1
                 unless hour_offset == 0 
-                    nearest_arrival = "#{time[0] + hour_offset}:#{minutes[0]}"
+                    return "#{time[0] + hour_offset}:#{minutes[0]}"
                 else
-                    nearest_arrival = "#{time[0]}:#{minutes[0]}"
+                    return "#{time[0]}:#{minutes[0]}"
                 end
-
-                return nearest_arrival
             end
     end
 end
