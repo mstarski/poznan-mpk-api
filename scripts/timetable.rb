@@ -8,7 +8,7 @@ module Timetable
         def get_time(from, to, line, relative_to)
             link = get_departure_info_link(from, to, line) 
             result = get_nearest_arrival(link, relative_to)
-            
+
             result[:line] = line
             result[:dest] = to
 
