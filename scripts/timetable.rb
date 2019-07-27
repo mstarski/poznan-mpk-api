@@ -76,10 +76,10 @@ module Timetable
 
                 initial_weekday = weekday
                 alt_hours_counter = 3 #It is used to count what hour is being checked when the day changes
-                minutes = []
                 hour_offset = 0
+                minutes = nil
 
-                while minutes.length == 0 do
+                loop do
                     day_index = weekday % 6 == 0 ? weekday.to_s : "1"
                     day_data = week_metadata[day_index.to_sym]
 
@@ -91,20 +91,24 @@ module Timetable
                         next
                     end
 
-                    minutes = get_minutes.call(html_timetable, index, day_data[:index_shift])
+                    minutes = get_minutes.call(html_timetable, index, day_data[:index_shift]).find {|m|
+                        m.to_i > time[1].to_i
+                    }
+
+                    break unless minutes.nil?
+
                     index += 6 
                     hour_offset += 1
                 end
                 
                 if initial_weekday != weekday
-                    return "No arrivals today but we've found one on #{day_num_to_name[weekday.to_i]}: #{alt_hours_counter}:#{minutes[0]}"
+                    return "No arrivals today but we've found one on #{day_num_to_name[weekday.to_i]}: #{alt_hours_counter}:#{minutes}"
                 end
 
-                hour_offset -= 1
                 unless hour_offset == 0 
-                    return "#{time[0] + hour_offset}:#{minutes[0]}"
+                    return "#{time[0] + hour_offset}:#{minutes}"
                 else
-                    return "#{time[0]}:#{minutes[0]}"
+                    return "#{time[0]}:#{minutes}"
                 end
             end
     end
