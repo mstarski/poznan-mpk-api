@@ -9,30 +9,14 @@ module Timetable
         def routes(from, to)
             routes = FindRoute::route(from, to)
             routes.each {|route|
-                pp route
                 #Stop -> #Line -> #Stop ...
-                i = 0
-                from = nil
-                to = nil
-                line = nil
+                last_stop_index = 0
                 transfer_checkpoint = nil
-                route.each_slice(3) {|slice|
-                    if i % 2 == 0
-                        from = slice[0]
-                        line = slice[1]
-                        to = slice[2]
-                        break if from.nil? || to.nil? || line.nil?
-                        transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
-                        from = to 
-                    else
-                        to = slice[1]
-                        line = slice[0]
-                        break if from.nil? || to.nil? || line.nil?
-                        transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
-                    end
-
-                    puts transfer_checkpoint
-                    i += 1
+                ((route.length - 1) / 2).times {
+                   from, line, to = route.slice(last_stop_index, 3)
+                   transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
+                   last_stop_index += 2
+                   puts transfer_checkpoint
                 }
             }
         end
