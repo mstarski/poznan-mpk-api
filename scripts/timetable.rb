@@ -7,8 +7,11 @@ module Timetable
     class << self
 
         def routes(from, to)
+            result = Array.new
             routes = FindRoute::route(from, to)
             routes.each {|route|
+                p route
+                tmp = Array.new #Array to hold all transfer information
                 #Stop -> #Line -> #Stop ...
                 last_stop_index = 0
                 transfer_checkpoint = nil
@@ -16,9 +19,11 @@ module Timetable
                    from, line, to = route.slice(last_stop_index, 3)
                    transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
                    last_stop_index += 2
-                   puts transfer_checkpoint
+                   tmp << transfer_checkpoint
                 }
+                result << tmp
             }
+            return result
         end
 
         private 
