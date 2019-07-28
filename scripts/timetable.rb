@@ -10,7 +10,7 @@ module Timetable
             result = Array.new
             routes = FindRoute::route(from, to)
             routes.each {|route|
-                p route
+                p routes
                 tmp = Array.new #Array to hold all transfer information
                 #Stop -> #Line -> #Stop ...
                 last_stop_index = 0
@@ -43,17 +43,23 @@ module Timetable
                 directions = ['left', 'right']
 
                 directions.each {|direction|
-                    found = nil
+                    from_meta = {
+                        'index': nil,
+                        'href': nil
+                    }
+                    to_meta = Hash.new 
                     route = doc.css("#box_timetable_#{direction} a")
-                    route.each {|stop|
+                    route.each_with_index {|stop, index|
                         if stop.text == from 
-                            if found.nil?
-                                return stop['href']
-                            else
-                                next
-                            end
+                            from_meta['index'] = index
+                            from_meta['href'] = stop['href']
                         elsif stop.text == to
-                            found = to
+                            to_meta['index'] = index
+                            to_meta['href'] = stop['href']
+                        end
+                        #We have to make sure both stops are on the route (There are trams that dont go the same way both directions)
+                        if !from_meta['index'].nil? && !to_meta['index'].nil? && from_meta['index'] < to_meta['index'] 
+                            return from_meta['href']
                         end
                     }
                 }
@@ -136,7 +142,6 @@ module Timetable
                 loop do
                     day_index = weekday % 6 == 0 ? weekday.to_s : "1"
                     day_data = week_metadata[day_index.to_sym]
-
                     #If there are no arivals the given day, check the next one
                     if index + day_data[:index_shift] > html_timetable.length
                         weekday = (weekday + 1) % 7
