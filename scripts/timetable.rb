@@ -82,7 +82,7 @@ module Timetable
                         #Get rid of \n and split string into [time_it_takes, stop_name]
                         eta, name = stop.text.delete!("\n").split("-")
                         #Find the stop that we are looking for 
-                        name == relative_to['stop_name']
+                        p name == relative_to['stop_name']
                     }
                     #Extract minutes
                     travel_time = travel_time.text.delete!("\n").split("-")[0].to_i
