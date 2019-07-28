@@ -78,14 +78,14 @@ module Timetable
                 #If we transfer, we have to adjust the next stop's arrival to be in time.
                 unless relative_to.nil?
                     #Retrieve how much time it takes to go from start to stop
-                    fixed_time = stops_eta_timetable.find {|stop|
+                    travel_time = stops_eta_timetable.find {|stop|
                         #Get rid of \n and split string into [time_it_takes, stop_name]
                         eta, name = stop.text.delete!("\n").split("-")
                         #Find the stop that we are looking for 
                         name == relative_to['stop_name']
                     }
                     #Extract minutes
-                    travel_time = fixed_time.text.delete!("\n").split("-")[0].to_i
+                    travel_time = travel_time.text.delete!("\n").split("-")[0].to_i
                     #Last stop of the route doesn't have minutes written next to it so we cover that case manually: stop before time + 2 min
                     if travel_time == 0
                         travel_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
@@ -158,9 +158,16 @@ module Timetable
                     end
 
                     #Prevent from getting a departure that is in the past
-                    minutes = get_minutes.call(html_timetable, index, day_data[:index_shift]).find {|m|
-                        m.to_i > time[1].to_i
-                    }
+                    minutes = get_minutes.call(html_timetable, index, day_data[:index_shift])
+                    unless hour_offset != 0
+                        minutes = minutes.find {|m|
+                            m.to_i > time[1].to_i
+                        }
+                    else
+                        #if we've jumped to the next hour, we can take the first element without
+                        #calculating anything since we know it's gonna be the earliest one
+                        minutes = minutes[0]
+                    end
 
                     #Index + 6 jumps to the next hour in the table
                     if minutes.nil?
