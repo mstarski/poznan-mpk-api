@@ -9,6 +9,7 @@ module Timetable
         def routes(from, to)
             routes = FindRoute::route(from, to)
             routes.each {|route|
+                pp route
                 #Stop -> #Line -> #Stop ...
                 i = 0
                 from = nil
@@ -128,7 +129,7 @@ module Timetable
                 }
 
                 #We are getting departure minutes from given hour and day here
-                get_minutes = Proc.new { |html_timetable, index, shift| 
+                get_minutes = Proc.new { |html_timetable, index, shift|
                     html_timetable[index + shift].text.split(" ")
                 }
 
@@ -138,17 +139,16 @@ module Timetable
                 }
 
                 initial_weekday = weekday
-                alt_hours_counter = 3 #It is used to count what hour is being checked when the day changes
+                alt_hours_counter = 4 #It is used to count what hour is being checked when the day changes
                 hour_offset = 0
                 minutes = nil
 
-                #TODO think about refactor this block
                 loop do
                     day_index = weekday % 6 == 0 ? weekday.to_s : "1"
                     day_data = week_metadata[day_index.to_sym]
 
                     #If there are no arivals the given day, check the next one
-                    if index + day_data[:index_shift] >= html_timetable.length
+                    if index + day_data[:index_shift] > html_timetable.length
                         weekday = (weekday + 1) % 7
                         index = 0                        
                         alt_hours_counter = (alt_hours_counter + 1) % 23
@@ -163,17 +163,16 @@ module Timetable
                     if minutes.nil?
                         index += 6
                         hour_offset += 1
-                        minutes = get_minutes.call(html_timetable, index, day_data[:index_shift])[0]
                     end
 
                     break unless minutes.nil?
-               end
+                end
 
                 #If there are no departures at given day any more we look at the next one and then response changes a bit
                 if initial_weekday != weekday
                     return {
                         :day => day_num_to_name[weekday.to_i],
-                        :hour => alt_hours_counter,
+                        :hour => alt_hours_counter + 1, #Loop ends before adding +1 to the counter so we have to add it here
                         :minutes => minutes,
                         :is_today => false,
                         :stop_name => stop_name,
