@@ -76,7 +76,8 @@ module Timetable
                         fixed_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
                     end
                     #Fix time object to have needed properties (set hours, minutes)
-                    time = fix_time(relative_to[:hour], relative_to[:minutes], time, fixed_time)
+                    time = fix_time(relative_to[:hour], relative_to[:minutes],  time, fixed_time)
+                    weekday = relative_to[:day]
                 end
                
                 #We only need hours and minutes here
@@ -155,7 +156,7 @@ module Timetable
                 #If there are no departures at given day any more we look at the next one and then response changes a bit
                 if initial_weekday != weekday
                     return {
-                        :day => day_num_to_name[weekday.to_i],
+                        :day => weekday,
                         :hour => alt_hours_counter + 1, #Loop ends before adding +1 to the counter so we have to add it here
                         :minutes => minutes,
                         :is_today => false,
@@ -164,7 +165,7 @@ module Timetable
                 #Here's the response when everything went OK 
                 else
                     return {
-                        :day => day_num_to_name[weekday.to_i],
+                        :day => weekday,
                         :hour => time[0] + hour_offset,
                         :minutes => minutes,
                         :is_today => true,
