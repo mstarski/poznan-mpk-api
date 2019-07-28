@@ -19,9 +19,15 @@ module Timetable
                     from, line, to = route.slice(last_stop_index, 3)
                     transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
                     last_stop_index += 2
-                    tmp << transfer_checkpoint
+                    #Error only occures when tram takes two different routes in two 
+                    #different directions
+                    unless transfer_checkpoint[:error]
+                        tmp << transfer_checkpoint
+                    end
                 }
-                result << tmp
+                unless tmp.empty?
+                    result << tmp
+                end
             }
             return result
         end
@@ -58,10 +64,17 @@ module Timetable
                         end
                     }
                 }
+                return -1
             end
 
             def get_nearest_arrival(link, dest, relative_to=nil, time=[Time.new.hour, Time.new.min], 
                                     weekday=Time.new.wday, existing_doc=nil)
+
+                #Link will only be broken when the different-route-tram is being considered
+                if link == -1
+                    return { :error => true, message: 'Route not found' } 
+                end
+
                 doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
                 
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')

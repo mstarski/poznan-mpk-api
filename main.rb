@@ -2,7 +2,6 @@ require_relative('./scripts/find_routes.rb')
 require_relative('./scripts/timetable.rb')
 
 #Example usage
-p Timetable::routes('Dworzec Zachodni', 'Rondo Rataje')
+p Timetable::routes('Rondo Rataje', 'Os. Sobieskiego')
 
-
-#TODO HANDLE THIS CASE ZEYLANDA => SOBIESKIEGO
+#HANDLE CASE RONDO RATAJE => OS SOBIESKIEGO
