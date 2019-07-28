@@ -1,11 +1,14 @@
 require_relative('./find_routes.rb')
+require_relative('../utils/time-tools.rb')
 require 'nokogiri'
 require 'open-uri'
 require 'pp'
 
+
+#LAST ROUTE STEP DOESNT HAVE OFFSET INCLUDED - TO FIX
+
 module Timetable
     class << self
-
         def routes(from, to)
             result = Array.new
             routes = FindRoute::route(from, to)
@@ -16,10 +19,10 @@ module Timetable
                 last_stop_index = 0
                 transfer_checkpoint = nil
                 ((route.length - 1) / 2).times {
-                   from, line, to = route.slice(last_stop_index, 3)
-                   transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
-                   last_stop_index += 2
-                   tmp << transfer_checkpoint
+                    from, line, to = route.slice(last_stop_index, 3)
+                    transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
+                    last_stop_index += 2
+                    tmp << transfer_checkpoint
                 }
                 result << tmp
             }
@@ -65,8 +68,9 @@ module Timetable
                 }
             end
 
-            def get_nearest_arrival(link, relative_to=nil, time=Time.new, weekday=Time.new.wday)
-                doc = Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
+            def get_nearest_arrival(link, relative_to=nil, time=[Time.new.hour, Time.new.min], 
+                                    weekday=Time.new.wday, existing_doc=nil)
+                doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
 
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
                 stop_name = doc.css('#MpkThisStop').text
@@ -81,20 +85,19 @@ module Timetable
                         name == relative_to['stop_name']
                     }
                     #Extract minutes
-                    fixed_time = fixed_time.text.delete!("\n").split("-")[0].to_i
+                    travel_time = fixed_time.text.delete!("\n").split("-")[0].to_i
                     #Last stop of the route doesn't have minutes written next to it so we cover that case manually: stop before time + 2 min
-                    if fixed_time == 0
-                        fixed_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
+                    if travel_time == 0
+                        travel_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
                     end
 
                     if relative_to[:day] != weekday
-                        puts relative_to[:hour], relative_to[:min]
+                        #If day changes, we just call the function 
+                        #again with fixed parameters and without "relative_to" arg
+                        fixed_time = TimeTools::add_minutes([relative_to[:hour].to_i, relative_to[:minutes].to_i], travel_time)
+                        return get_nearest_arrival(link, nil, fixed_time, relative_to[:day], doc)
                     end
-
-               end
-                
-                time = [time.hour, time.min]
-
+                end
                 #Remove unnecessary nodes from the dom
                 doc.css('.timetable td.Left').remove
 
@@ -109,7 +112,8 @@ module Timetable
                 #Sundays hour
                 #Sundays hours
 
-                day_num_to_name = ["Sunday", "Monday", "Tuesday", "Thursday", "Wednesday", "Friday", "Saturday"]
+                day_num_to_name = ["Sunday", "Monday", "Tuesday", "Thursday", 
+                                "Wednesday", "Friday", "Saturday"]
                 week_metadata = {
                     "0": {
                         name: 'Sundays',
@@ -130,7 +134,9 @@ module Timetable
                     html_timetable[index + shift].text.split(" ")
                 }
 
-                #Find the weekdays hour index - html_timetable[index +1/+3/+5] are the weekdays/saturdays/sundays minutes
+                #Find the weekdays hour index - html_timetable[index +1/+3/+5] are 
+                #the weekdays/saturdays/sundays minutes
+
                 index = html_timetable.find_index {|cell| 
                     cell.text == time[0].to_s
                 }
@@ -156,6 +162,7 @@ module Timetable
                         m.to_i > time[1].to_i
                     }
 
+                    #Index + 6 jumps to the next hour in the table
                     if minutes.nil?
                         index += 6
                         hour_offset += 1
@@ -164,11 +171,13 @@ module Timetable
                     break unless minutes.nil?
                 end
 
-                #If there are no departures at given day any more we look at the next one and then response changes a bit
+                #If there are no departures at given day any more we look 
+                #at the next one and then response changes a bit
                 if initial_weekday != weekday
                     return {
                         :day => weekday,
-                        :hour => alt_hours_counter + 1, #Loop ends before adding +1 to the counter so we have to add it here
+                        #Loop ends before adding +1 to the counter so we have to add it here
+                        :hour => alt_hours_counter + 1, 
                         :minutes => minutes,
                         :is_today => false,
                         :stop_name => stop_name,
@@ -184,16 +193,5 @@ module Timetable
                     }
                 end
             end
-
-            #We do it like this to preserve time object properties (i.e it will change year, day etc when we add minutes)
-            #offset is given in minutes
-            def fix_time(hour, minutes, time, offset)
-                loop do
-                    time += 240
-                    break if time.hour >= hour.to_i && time.min >= minutes.to_i
-                end
-
-                return time + (offset * 60)
-            end
-    end
+     end
 end
