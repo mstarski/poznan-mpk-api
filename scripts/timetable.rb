@@ -30,7 +30,6 @@ module Timetable
             def get_time(from, to, line, relative_to)
                 link = get_departure_info_link(from, to, line) 
                 result = get_nearest_arrival(link, to, relative_to)
-
                 result[:line] = line
 
                 return result
@@ -64,7 +63,7 @@ module Timetable
             def get_nearest_arrival(link, dest, relative_to=nil, time=[Time.new.hour, Time.new.min], 
                                     weekday=Time.new.wday, existing_doc=nil)
                 doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
-
+                
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
                 journey_time = get_journey_time(stops_eta_timetable, dest).to_i
                 stop_name = doc.css('#MpkThisStop').text
@@ -189,20 +188,17 @@ module Timetable
             end
 
             def get_journey_time(timetable, stop_name)
-                #Retrieve how much time it takes to go from start to stop
-                journey_info = timetable.find {|stop|
-                    #Get rid of \n and split string into [time_it_takes, stop_name]
-                    journey_time, name = stop.text.delete!("\n").split("-")
-                    #Find the stop that we are looking for 
-                    name == stop_name 
+                journey_data = timetable.find {|stop| 
+                    stop_data = stop.text.delete("\n").split("-")                    
+                    stop_data.include? stop_name 
                 }
-                #Extract minutes
-                journey_time = journey_info.text.delete!("\n").split("-")[0].to_i
-                #Last stop of the route doesn't have minutes written next to it so we cover that case manually: stop before time + 2 min
-                if journey_time == 0
-                    journey_time = timetable[timetable.length - 2].text.delete!("\n").split("-")[0].to_i
+                journey_data = journey_data.text.delete!("\n").split("-")
+                
+                if journey_data.length == 1
+                    return 2
+                else
+                    return journey_data[0].to_i
                 end
-                return journey_time
-            end
+           end
      end
 end
