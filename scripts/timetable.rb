@@ -4,16 +4,13 @@ require 'nokogiri'
 require 'open-uri'
 require 'pp'
 
-
-#LAST ROUTE STEP DOESNT HAVE OFFSET INCLUDED - TO FIX
-
 module Timetable
     class << self
         def routes(from, to)
             result = Array.new
             routes = FindRoute::route(from, to)
             routes.each {|route|
-                p routes
+                p route
                 tmp = Array.new #Array to hold all transfer information
                 #Stop -> #Line -> #Stop ...
                 last_stop_index = 0
@@ -32,10 +29,9 @@ module Timetable
         private 
             def get_time(from, to, line, relative_to)
                 link = get_departure_info_link(from, to, line) 
-                result = get_nearest_arrival(link, relative_to)
+                result = get_nearest_arrival(link, to, relative_to)
 
                 result[:line] = line
-                result[:dest] = to
 
                 return result
             end
@@ -46,10 +42,7 @@ module Timetable
                 directions = ['left', 'right']
 
                 directions.each {|direction|
-                    from_meta = {
-                        'index': nil,
-                        'href': nil
-                    }
+                    from_meta = Hash.new 
                     to_meta = Hash.new 
                     route = doc.css("#box_timetable_#{direction} a")
                     route.each_with_index {|stop, index|
@@ -68,36 +61,26 @@ module Timetable
                 }
             end
 
-            def get_nearest_arrival(link, relative_to=nil, time=[Time.new.hour, Time.new.min], 
+            def get_nearest_arrival(link, dest, relative_to=nil, time=[Time.new.hour, Time.new.min], 
                                     weekday=Time.new.wday, existing_doc=nil)
                 doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
 
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
+                journey_time = get_journey_time(stops_eta_timetable, dest).to_i
                 stop_name = doc.css('#MpkThisStop').text
 
                 #If we transfer, we have to adjust the next stop's arrival to be in time.
                 unless relative_to.nil?
-                    #Retrieve how much time it takes to go from start to stop
-                    travel_time = stops_eta_timetable.find {|stop|
-                        #Get rid of \n and split string into [time_it_takes, stop_name]
-                        eta, name = stop.text.delete!("\n").split("-")
-                        #Find the stop that we are looking for 
-                        p name == relative_to['stop_name']
-                    }
-                    #Extract minutes
-                    travel_time = travel_time.text.delete!("\n").split("-")[0].to_i
-                    #Last stop of the route doesn't have minutes written next to it so we cover that case manually: stop before time + 2 min
-                    if travel_time == 0
-                        travel_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
-                    end
-
                     if relative_to[:day] != weekday
                         #If day changes, we just call the function 
                         #again with fixed parameters and without "relative_to" arg
-                        fixed_time = TimeTools::add_minutes([relative_to[:hour].to_i, relative_to[:minutes].to_i], travel_time)
-                        return get_nearest_arrival(link, nil, fixed_time, relative_to[:day], doc)
+                        fixed_time = TimeTools::add_minutes([relative_to[:hour].to_i, 
+                            relative_to[:minutes].to_i], journey_time)
+                        return get_nearest_arrival(link, dest, nil, fixed_time, relative_to[:day], doc)
                     end
                 end
+
+
                 #Remove unnecessary nodes from the dom
                 doc.css('.timetable td.Left').remove
 
@@ -188,6 +171,8 @@ module Timetable
                         :minutes => minutes,
                         :is_today => false,
                         :stop_name => stop_name,
+                        :journey_time => journey_time,
+                        :dest => dest
                     }
                 #Here's the response when everything went OK 
                 else
@@ -197,8 +182,27 @@ module Timetable
                         :minutes => minutes,
                         :is_today => true,
                         :stop_name => stop_name,
+                        :journey_time => journey_time,
+                        :dest => dest
                     }
                 end
+            end
+
+            def get_journey_time(timetable, stop_name)
+                #Retrieve how much time it takes to go from start to stop
+                journey_info = timetable.find {|stop|
+                    #Get rid of \n and split string into [time_it_takes, stop_name]
+                    journey_time, name = stop.text.delete!("\n").split("-")
+                    #Find the stop that we are looking for 
+                    name == stop_name 
+                }
+                #Extract minutes
+                journey_time = journey_info.text.delete!("\n").split("-")[0].to_i
+                #Last stop of the route doesn't have minutes written next to it so we cover that case manually: stop before time + 2 min
+                if journey_time == 0
+                    journey_time = timetable[timetable.length - 2].text.delete!("\n").split("-")[0].to_i
+                end
+                return journey_time
             end
      end
 end
