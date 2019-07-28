@@ -86,12 +86,13 @@ module Timetable
                     if fixed_time == 0
                         fixed_time = stops_eta_timetable[stops_eta_timetable.length - 2].text.delete!("\n").split("-")[0].to_i
                     end
-                    #Fix time object to have needed properties (set hours, minutes)
-                    time = fix_time(relative_to[:hour], relative_to[:minutes],  time, fixed_time)
-                    weekday = relative_to[:day]
-                end
-               
-                #We only need hours and minutes here
+
+                    if relative_to[:day] != weekday
+                        puts relative_to[:hour], relative_to[:min]
+                    end
+
+               end
+                
                 time = [time.hour, time.min]
 
                 #Remove unnecessary nodes from the dom
