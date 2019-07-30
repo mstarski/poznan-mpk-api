@@ -208,7 +208,7 @@ module Timetable
                 journey_data = journey_data.text.delete!("\n").split("-")
                 
                 if journey_data.length == 1
-                    return 2
+                    return timetable[timetable.length - 2].text.delete("\n").split("-")[0].to_i + 2 
                 else
                     return journey_data[0].to_i
                 end

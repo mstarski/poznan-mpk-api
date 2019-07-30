@@ -3,5 +3,3 @@ require_relative('./scripts/timetable.rb')
 
 #Example usage
 p Timetable::routes('Rondo Rataje', 'Os. Sobieskiego')
-
-#HANDLE CASE RONDO RATAJE => OS SOBIESKIEGO
