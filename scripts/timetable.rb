@@ -29,7 +29,7 @@ module Timetable
                     result << tmp
                 end
             }
-            return result
+            return result.sort! { |a, b| a.length <=> b.length }
         end
 
         private 
