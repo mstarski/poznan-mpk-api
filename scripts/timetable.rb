@@ -88,7 +88,7 @@ module Timetable
                 unless relative_to.nil?
                     #Here we adjust time to be after arrival from the previous stop
                     fixed_time = TimeTools::add_minutes([relative_to[:hour].to_i, 
-                        relative_to[:minutes].to_i], journey_time)
+                        relative_to[:minutes].to_i], relative_to[:journey_time])
                     return get_nearest_arrival(link, dest, nil, fixed_time, relative_to[:day], doc)
                 end
 
@@ -203,6 +203,10 @@ module Timetable
             def get_journey_time(timetable, stop_name)
                 journey_data = timetable.find {|stop| 
                     stop_data = stop.text.delete("\n").split("-")                    
+                    #There are stops with one "-" in its name code below handles that case
+                    if stop_data.length == 3
+                        stop_data = [stop_data[0], "#{stop_data[1]}-#{stop_data[2]}"]
+                    end
                     stop_data.include? stop_name 
                 }
                 journey_data = journey_data.text.delete!("\n").split("-")
