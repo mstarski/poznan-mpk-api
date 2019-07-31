@@ -4,7 +4,7 @@ The api scrapps [Poznań City communication webpage](http://www.mpk.poznan.pl) t
 
 ## API Reference
 
-`POST /api/get_routes`<br>
+### POST `/api/get_routes`
 Displays possible routes to take between two stops
 
 **Request body**:
@@ -22,7 +22,7 @@ Both from and to must be a valid MPK Poznań (Tram) stop name.
 
 ```json
 [
-	[    {
+	[
 
 		{
 			"day": 3,
