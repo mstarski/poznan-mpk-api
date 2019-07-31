@@ -9,6 +9,9 @@ module Timetable
         def routes(from, to)
             result = Array.new
             routes = FindRoute::route(from, to)
+            if routes == -1
+                return { :error => true, :message => 'Incorrect stop name' }
+            end
             routes.each {|route|
                 p route
                 tmp = Array.new #Array to hold all transfer information
@@ -83,13 +86,10 @@ module Timetable
 
                 #If we transfer, we have to adjust the next stop's arrival to be in time.
                 unless relative_to.nil?
-                    if relative_to[:day] != weekday
-                        #If day changes, we just call the function 
-                        #again with fixed parameters and without "relative_to" arg
-                        fixed_time = TimeTools::add_minutes([relative_to[:hour].to_i, 
-                            relative_to[:minutes].to_i], journey_time)
-                        return get_nearest_arrival(link, dest, nil, fixed_time, relative_to[:day], doc)
-                    end
+                    #Here we adjust time to be after arrival from the previous stop
+                    fixed_time = TimeTools::add_minutes([relative_to[:hour].to_i, 
+                        relative_to[:minutes].to_i], journey_time)
+                    return get_nearest_arrival(link, dest, nil, fixed_time, relative_to[:day], doc)
                 end
 
 

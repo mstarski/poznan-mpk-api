@@ -12,5 +12,12 @@ post '/api/get_route' do
     from = params['from']
     to = params['to']
     response.headers['Content-Type'] = 'application/json'
-    return Timetable::routes(from, to).to_json
+    data = Timetable::routes(from, to).to_json
+    if data['error']
+        status 400
+    else
+        status 200
+    end
+
+    return data
 end

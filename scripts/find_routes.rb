@@ -21,6 +21,11 @@ $stops_data.each {|code, data|
 module FindRoute
     class << self
        def route(start, stop)
+            #Handle case when user types incorrect stop name
+            if $name_to_code[start].nil? || $name_to_code[stop].nil?
+                return -1
+            end
+
             routes = []
             current_route = []
             $name_to_code[start].each {|start_code|
