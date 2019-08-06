@@ -61,5 +61,15 @@ Both from and to must be a valid MPK Poznań (Tram) stop name.
 	]
 ]
 ```
-
 Each array holds a route that can be taken to reach the destination
+**Fields**
+```
+day: [0-6] - Day number where 0 is Sunday
+hour: [0-24] - Hour of departure
+minutes: [0-60N?] - Minutes of departure
+is_today: true|false - Is the departure today
+stop_name: string - Stop name
+journey_time: int - Journey time in minutes
+dest: string - Destination stop name
+line: int - Line number
+```
