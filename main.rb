@@ -21,3 +21,11 @@ get '/api/get_routes' do
 
     return data
 end
+
+get '/api/quick_look' do
+    stop = params['stop']
+    line = params['line']
+    response.headers['Content-Type'] = 'application/json'
+
+    return Timetable::quick_look(line, stop)
+end

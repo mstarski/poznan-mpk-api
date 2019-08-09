@@ -12,6 +12,7 @@ module Timetable
             if routes == -1
                 return { :error => true, :message => 'Incorrect stop name' }
             end
+            
             routes.each {|route|
                 p route
                 tmp = Array.new #Array to hold all transfer information
@@ -35,6 +36,12 @@ module Timetable
             return result.sort! { |a, b| a.length <=> b.length }
         end
 
+        def quick_look(line, stop)
+            link = get_departure_info_link(stop, nil, line)
+            puts link
+            return link
+        end
+
         private 
             def get_time(from, to, line, relative_to)
                 link = get_departure_info_link(from, to, line) 
@@ -48,6 +55,7 @@ module Timetable
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl/component/transport/#{line}"))
                 doc.css(".FromTo").remove
                 directions = ['left', 'right']
+                both_dirs_links = Array.new #Used for quick_look
 
                 directions.each {|direction|
                     from_meta = Hash.new 
@@ -57,17 +65,20 @@ module Timetable
                         if stop.text == from 
                             from_meta['index'] = index
                             from_meta['href'] = stop['href']
+                            both_dirs_links << stop['href']
                         elsif stop.text == to
                             to_meta['index'] = index
                             to_meta['href'] = stop['href']
                         end
+
                         #We have to make sure both stops are on the route (There are trams that dont go the same way both directions)
-                        if !from_meta['index'].nil? && !to_meta['index'].nil? && from_meta['index'] < to_meta['index'] 
-                            return from_meta['href']
+                        if !from_meta['index'].nil? && !to_meta['index'].nil?\
+                           && from_meta['index'] < to_meta['index'] && !to.nil?
+                                return from_meta['href']
                         end
                     }
                 }
-                return -1
+                return to.nil? ? both_dirs_links : -1
             end
 
             def get_nearest_arrival(link, dest, relative_to=nil, time=[Time.new.hour, Time.new.min], 
