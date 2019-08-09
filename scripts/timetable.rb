@@ -37,9 +37,12 @@ module Timetable
         end
 
         def quick_look(line, stop)
-            link = get_departure_info_link(stop, nil, line)
-            puts link
-            return link
+            result = []
+            links = get_departure_info_link(stop, nil, line)
+            links.each {|link|
+                result << get_nearest_arrival(link, nil, nil)
+            }
+            return result
         end
 
         private 
@@ -90,9 +93,11 @@ module Timetable
                 end
 
                 doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
-                
+            
                 stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
-                journey_time = get_journey_time(stops_eta_timetable, dest).to_i
+                unless dest.nil?
+                    journey_time = get_journey_time(stops_eta_timetable, dest).to_i
+                end
                 stop_name = doc.css('#MpkThisStop').text
 
                 #If we transfer, we have to adjust the next stop's arrival to be in time.
@@ -155,6 +160,7 @@ module Timetable
                 loop do
                     day_index = weekday % 6 == 0 ? weekday.to_s : "1"
                     day_data = week_metadata[day_index.to_sym]
+
                     #If there are no arivals the given day, check the next one
                     if index + day_data[:index_shift] > html_timetable.length
                         weekday = (weekday + 1) % 7
