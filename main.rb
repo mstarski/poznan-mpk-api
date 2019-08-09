@@ -8,7 +8,7 @@ get '/api' do
     <a href="https://github.com/michalStarski/poznan-mpk-api">Github</a>'
 end
 
-post '/api/get_route' do
+get '/api/get_routes' do
     from = params['from']
     to = params['to']
     response.headers['Content-Type'] = 'application/json'

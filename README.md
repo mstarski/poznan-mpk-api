@@ -4,7 +4,8 @@ The api scrapps [Poznań City communication webpage](http://www.mpk.poznan.pl) t
 
 ## API Reference
 
-### POST `/api/get_routes`
+### GET `/api/get_routes`
+
 Displays possible routes to take between two stops
 
 **Request body**:
@@ -23,7 +24,6 @@ Both from and to must be a valid MPK Poznań (Tram) stop name.
 ```json
 [
 	[
-
 		{
 			"day": 3,
 			"hour": 12,
@@ -61,7 +61,9 @@ Both from and to must be a valid MPK Poznań (Tram) stop name.
 	]
 ]
 ```
+
 Each array holds a route that can be taken to reach the destination <br>
+
 ```
 day: [0-6] - Day number where 0 is Sunday
 hour: [0-24] - Hour of departure

@@ -49,8 +49,12 @@ line_links.each { |line_link|
 }
 
 #Write data to the file
+unless File::directory?("#{__dir__}/../data")
+	Dir.mkdir("#{__dir__}/../data")
+end
+
 puts "Writing data to the file..."
-File.open("#{__dir__}/../data/ztm_data.json", 'w') { |f|
+File.open("#{__dir__}/../data/ztm_data.json", 'w+') { |f|
 	f.write(ztm_data.to_json)
 }
 
