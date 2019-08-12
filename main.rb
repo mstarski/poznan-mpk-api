@@ -27,5 +27,5 @@ get '/api/quick_look' do
     line = params['line']
     response.headers['Content-Type'] = 'application/json'
 
-    return Timetable::quick_look(line, stop)
+    return Timetable::quick_look(line, stop).to_json
 end

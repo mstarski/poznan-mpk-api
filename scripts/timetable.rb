@@ -37,12 +37,15 @@ module Timetable
         end
 
         def quick_look(line, stop)
-            result = []
+            results = []
             links = get_departure_info_link(stop, nil, line)
             links.each {|link|
-                result << get_nearest_arrival(link, nil, nil)
+                result = get_nearest_arrival(link, nil, nil)
+                unless result.nil?
+                    results << result
+                end
             }
-            return result
+            return results
         end
 
         private 
@@ -152,6 +155,10 @@ module Timetable
                     cell.text == time[0].to_s
                 }
 
+                if index.nil?
+                    return -1 
+                end
+
                 initial_weekday = weekday
                 alt_hours_counter = 4 #It is used to count what hour is being checked when the day changes
                 hour_offset = 0
@@ -186,7 +193,6 @@ module Timetable
                         index += 6
                         hour_offset += 1
                     end
-
                     break unless minutes.nil?
                 end
 
