@@ -88,5 +88,5 @@ Displays nearest arrival for given stop and line number
 }
 ```
 
-Stop must be a valid MPK Poznań (Tram) stop name.
+Stop must be a valid MPK Poznań (Tram) stop name.<br>
 Line must be a valid number of a MPK Poznań tram.
