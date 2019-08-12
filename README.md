@@ -74,3 +74,19 @@ journey_time: int - Journey time in minutes
 dest: string - Destination stop name
 line: int - Line number
 ```
+
+### GET `/api/quick_look`
+
+Displays nearest arrival for given stop and line number
+
+**Request body**
+
+```
+{
+	stop: <String>,
+	line: <Int>
+}
+```
+
+Stop must be a valid MPK Poznań (Tram) stop name.
+Line must be a valid number of a MPK Poznań tram.
