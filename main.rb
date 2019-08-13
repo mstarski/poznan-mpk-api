@@ -27,5 +27,11 @@ get '/api/quick_look' do
     line = params['line']
     response.headers['Content-Type'] = 'application/json'
 
-    return Timetable::quick_look(line, stop).to_json
+    data = Timetable::quick_look(line, stop)
+
+    #Quick_look returns -1 when the stop is the last stop of the route
+    #We have to filter it out
+    data = data.delete_if { |entry| entry === -1 }
+    
+    return data.to_json
 end

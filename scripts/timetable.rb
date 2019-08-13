@@ -59,6 +59,7 @@ module Timetable
 
             def get_departure_info_link(from, to, line)
                 doc = Nokogiri::HTML(open("http://mpk.poznan.pl/component/transport/#{line}"))
+
                 doc.css(".FromTo").remove
                 directions = ['left', 'right']
                 both_dirs_links = Array.new #Used for quick_look
@@ -112,8 +113,12 @@ module Timetable
                 end
 
 
+                full_route = doc.css('.MpkNextStop')
+                final_destination = full_route[full_route.length - 1].text
+
                 #Remove unnecessary nodes from the dom
                 doc.css('.timetable td.Left').remove
+
 
                 html_timetable = doc.css('.MpkTimetableRow > td')
                 #---html_timetable array format---
@@ -196,31 +201,34 @@ module Timetable
                     break unless minutes.nil?
                 end
 
+                #Response base
+                response = {
+                        :day => weekday,
+                        :minutes => minutes,
+                        :stop_name => stop_name,
+                        :final_destination => final_destination
+                }
+
                 #If there are no departures at given day any more we look 
                 #at the next one and then response changes a bit
                 if initial_weekday != weekday
-                    return {
-                        :day => weekday,
-                        #Loop ends before adding +1 to the counter so we have to add it here
-                        :hour => alt_hours_counter + 1, 
-                        :minutes => minutes,
-                        :is_today => false,
-                        :stop_name => stop_name,
-                        :journey_time => journey_time,
-                        :dest => dest
-                    }
+                    #Loop ends before adding +1 to the counter so we have to add it here
+                    response[:hour] = alt_hours_counter + 1
+                    response[:is_today] = false
+                    response[:journey_time] = journey_time
+                    response[:dest] = dest
+
                 #Here's the response when everything went OK 
                 else
-                    return {
-                        :day => weekday,
-                        :hour => time[0] + hour_offset,
-                        :minutes => minutes,
-                        :is_today => true,
-                        :stop_name => stop_name,
-                        :journey_time => journey_time,
-                        :dest => dest
-                    }
+                    response[:hour] = time[0] + hour_offset
+                    response[:is_today] = true
+                    response[:journey_time] = journey_time
+                    response[:dest] = dest
                 end
+
+                #Filter out nil fields since we dont need them
+                response.delete_if { |key, value| value.nil? }
+                return response
             end
 
             def get_journey_time(timetable, stop_name)
