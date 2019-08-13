@@ -42,6 +42,7 @@ module Timetable
             links.each {|link|
                 result = get_nearest_arrival(link, nil, nil)
                 unless result.nil?
+                    result[:line] = line
                     results << result
                 end
             }

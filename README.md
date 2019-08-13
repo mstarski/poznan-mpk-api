@@ -62,7 +62,7 @@ Both from and to must be a valid MPK Poznań (Tram) stop name.
 ]
 ```
 
-Each array holds a route that can be taken to reach the destination <br>
+Each array holds a route that can be taken to reach the destination. <br>
 
 ```
 day: [0-6] - Day number where 0 is Sunday
@@ -77,7 +77,7 @@ line: int - Line number
 
 ### GET `/api/quick_look`
 
-Displays nearest arrival for given stop and line number
+Displays nearest arrival for given stop and line number.
 
 **Request body**
 
@@ -90,3 +90,40 @@ Displays nearest arrival for given stop and line number
 
 Stop must be a valid MPK Poznań (Tram) stop name.<br>
 Line must be a valid number of a MPK Poznań tram.
+
+**Example response body**
+
+```json
+[
+	{
+		"day": 2,
+		"minutes": "27oN",
+		"stop_name": "Szymanowskiego",
+		"final_destination": "Franowo",
+		"hour": 21,
+		"is_today": true,
+		"line": "16"
+	},
+	{
+		"day": 2,
+		"minutes": "23N",
+		"stop_name": "Szymanowskiego",
+		"final_destination": "Os. Sobieskiego",
+		"hour": 21,
+		"is_today": true,
+		"line": "16"
+	}
+]
+```
+
+Each object represents the nearest arrival of the given tram. <br>
+
+```
+day: [0-6] - Day number where 0 is Sunday
+minutes: [0-60N?] - Minutes of departure
+stop_name: string - Stop name
+final_destination: string - line's final destination (direction of the tram)
+hour: [0-24] - Hour of departure
+is_today: true|false - Is the departure today
+line: int - Line number
+```
