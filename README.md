@@ -2,6 +2,31 @@
 
 The api scrapps [Poznań City communication webpage](http://www.mpk.poznan.pl) to provide trams' departure times and route planning.
 
+## Getting started
+
+To run an application you have to have ruby installed on your machine.
+
+Start by installing necessary dependencies
+
+```shell
+	$ bundle install
+```
+
+App requires data scrapped from the [MPK Poznań's page](http://www.mpk.poznan.pl).
+To run the scrapper type:
+
+```shell
+	$ make scrap
+```
+
+and wait until scrapping process is done (it takes around 10-15s depending on your internet connection).
+
+Finally you can run the app by typing:
+
+```shell
+	$ make start
+```
+
 ## API Reference
 
 ### GET `/api/get_routes`
