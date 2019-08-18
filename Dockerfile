@@ -13,4 +13,4 @@ RUN bundle install
 COPY . .
 RUN make scrap
 
-CMD ["ruby", "main.rb"]
+CMD ["bundle", "exec", "rackup", "-p", "4567", "--host", "0.0.0.0"]
