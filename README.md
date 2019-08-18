@@ -4,7 +4,8 @@ The api scrapps [Poznań City communication webpage](http://www.mpk.poznan.pl) t
 
 ## Getting started
 
-To run an application you have to have ruby installed on your machine.
+There are two ways to run poznan-mpk-api.
+The first and the easiest one is to run the app using **your ruby binary**: 
 
 Start by installing necessary dependencies
 
@@ -24,8 +25,18 @@ and wait until scrapping process is done (it takes around 10-15s depending on yo
 Finally you can run the app by typing:
 
 ```shell
+	$ ruby main.rb 
+```
+
+The second way requires **docker** installed on your machine.
+It will run an app inside a container, ensuring that everything will work correctly.
+To run the app inside a docker container type:
+
+```shell
 	$ make start
 ```
+
+(You have to scrap data too for app to work).
 
 ## API Reference
 
