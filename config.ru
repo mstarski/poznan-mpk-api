@@ -1,3 +1,5 @@
+# frozen_literal_string: true
+
 require_relative('./main.rb')
 require 'sinatra'
 

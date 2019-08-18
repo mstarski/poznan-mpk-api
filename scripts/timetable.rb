@@ -37,7 +37,7 @@ module Timetable
       links = get_departure_info_link(stop, nil, line)
       links.each do |link|
         result = get_nearest_arrival(link, nil, nil)
-        unless result.nil?
+        unless result.nil? || result == -1
           result[:line] = line
           results << result
         end
@@ -53,7 +53,7 @@ module Timetable
       result[:line] = line
 
       result
-      end
+    end
 
     def get_departure_info_link(from, to, line)
       doc = Nokogiri::HTML(open("http://mpk.poznan.pl/component/transport/#{line}"))
@@ -67,11 +67,12 @@ module Timetable
         to_meta = {}
         route = doc.css("#box_timetable_#{direction} a")
         route.each_with_index do |stop, index|
-          if stop.text == from
+          # Downcase because to enable all-lowercase inputs
+          if stop.text&.downcase == from&.downcase
             from_meta['index'] = index
             from_meta['href'] = stop['href']
             both_dirs_links << stop['href']
-          elsif stop.text == to
+          elsif stop.text&.downcase == to&.downcase
             to_meta['index'] = index
             to_meta['href'] = stop['href']
           end
@@ -84,7 +85,7 @@ module Timetable
         end
       end
       to.nil? ? both_dirs_links : -1
-      end
+    end
 
     def get_nearest_arrival(link, dest, relative_to = nil, time = [Time.new.hour, Time.new.min],
                             weekday = Time.new.wday, existing_doc = nil)
@@ -143,8 +144,8 @@ module Timetable
       }
 
       # We are getting departure minutes from given hour and day here
-      get_minutes = proc do |html_timetable, index, shift|
-        html_timetable[index + shift].text.split(' ')
+      get_minutes = proc do |timetable, index, shift|
+        timetable[index + shift].text.split(' ')
       end
 
       # Find the weekdays hour index - html_timetable[index +1/+3/+5] are
@@ -162,7 +163,7 @@ module Timetable
       minutes = nil
 
       loop do
-        day_index = weekday % 6 == 0 ? weekday.to_s : '1'
+        day_index = (weekday % 6).zero? ? weekday.to_s : '1'
         day_data = week_metadata[day_index.to_sym]
 
         # If there are no arivals the given day, check the next one
@@ -207,21 +208,20 @@ module Timetable
         # Loop ends before adding +1 to the counter so we have to add it here
         response[:hour] = alt_hours_counter + 1
         response[:is_today] = false
-        response[:journey_time] = journey_time
-        response[:dest] = dest
 
       # Here's the response when everything went OK
       else
         response[:hour] = time[0] + hour_offset
         response[:is_today] = true
-        response[:journey_time] = journey_time
-        response[:dest] = dest
       end
+
+      response[:journey_time] = journey_time
+      response[:dest] = dest
 
       # Filter out nil fields since we dont need them
       response.delete_if { |_key, value| value.nil? }
       response
-      end
+    end
 
     def get_journey_time(timetable, stop_name)
       journey_data = timetable.find do |stop|
@@ -230,7 +230,8 @@ module Timetable
         if stop_data.length == 3
           stop_data = [stop_data[0], "#{stop_data[1]}-#{stop_data[2]}"]
         end
-        stop_data.include? stop_name
+        stop_data.collect! { |x| x&.downcase }
+        stop_data.include? stop_name.downcase
       end
       journey_data = journey_data.text.delete!("\n").split('-')
 
@@ -239,6 +240,6 @@ module Timetable
       else
         return journey_data[0].to_i
       end
-     end
+    end
    end
 end

@@ -32,7 +32,7 @@ line_links.each do |line_link|
     route = line_page.css "#box_timetable_#{direction} a"
     route.each do |stop|
       stop_code = stop['href'].split('/')[4]
-      stop_name = stop.text
+      stop_name = stop.text&.downcase
 
       if ztm_data[:stops_data][stop_code].nil?
         ztm_data[:stops_data][stop_code] = {
