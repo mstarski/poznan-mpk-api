@@ -36,8 +36,6 @@ To run the app inside a docker container type:
 	$ make start
 ```
 
-(You have to scrap data too for app to work).
-
 ## API Reference
 
 ### GET `/api/get_routes`

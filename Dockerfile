@@ -11,5 +11,6 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
 COPY . .
+RUN make scrap
 
 CMD ["ruby", "main.rb"]

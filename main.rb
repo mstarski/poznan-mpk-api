@@ -5,12 +5,12 @@ require_relative('./scripts/timetable.rb')
 require 'sinatra'
 require 'json'
 
-# Listen on all interfaces, this ensures 
+# Listen on all interfaces, this ensures
 # that app'll work inside docker container
 set :bind, '0.0.0.0'
 
 get '/api' do
-  '<p>This is the poznan-mpk-api:</p> 
+  '<p>This is the poznan-mpk-api:</p>
     <a href="https://github.com/michalStarski/poznan-mpk-api">Github</a>'
 end
 
