@@ -1,7 +1,7 @@
 .PHONY: start scrap
 
 start:
-	ruby main.rb
+	docker-compose up	
 
 scrap:
 	ruby scripts/scrap_data.rb
