@@ -25,7 +25,7 @@ and wait until scrapping process is done (it takes around 10-15s depending on yo
 Finally you can run the app by typing:
 
 ```shell
-	$ ruby main.rb 
+	$ rackup -p <port>
 ```
 
 The second way requires **docker** installed on your machine.
