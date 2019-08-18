@@ -15,8 +15,9 @@ get '/api' do
 end
 
 get '/api/get_routes' do
-  from = params['from']
-  to = params['to']
+  # Downcase to make parsing data easier
+  from = params['from'].downcase
+  to = params['to'].downcase
   response.headers['Content-Type'] = 'application/json'
   data = Timetable.routes(from, to).to_json
   if data['error']
@@ -29,8 +30,8 @@ get '/api/get_routes' do
 end
 
 get '/api/quick_look' do
-  stop = params['stop']
-  line = params['line']
+  stop = params['stop'].downcase
+  line = params['line'].downcase
   response.headers['Content-Type'] = 'application/json'
 
   data = Timetable.quick_look(line, stop)
