@@ -6,7 +6,7 @@ require_relative('../utils/traverse')
 require_relative('../utils/ztm_data_model')
 require 'pp'
 
-# Finds routes between two given stops
+# Module containing methods for finding routes between two given stops
 module FindRoute
 
   class << self

@@ -6,8 +6,11 @@ require 'nokogiri'
 require 'open-uri'
 require 'pp'
 
+# Module containing methods for finding departure and arrival
+# informations based on given route and time
 module Timetable
   class << self
+    # Returns detailed time-based information about routes
     def routes(from, to)
       result = []
       routes = FindRoute.route(from, to)
