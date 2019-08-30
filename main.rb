@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative('./scripts/find_routes.rb')
-require_relative('./scripts/timetable.rb')
+require_relative('./lib/find_routes.rb')
+require_relative('./lib/timetable.rb')
 require 'sinatra'
 require 'json'
 

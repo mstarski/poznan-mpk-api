@@ -2,7 +2,7 @@
 
 require_relative('../data-structures/graph')
 require_relative('../data-structures/node')
-require_relative('../scripts/traverse')
+require_relative('../utils/traverse')
 require 'json'
 require 'pp'
 
