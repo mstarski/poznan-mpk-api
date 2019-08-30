@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Utilities for time-based operations
 module TimeTools
   # time: <Array<int, int>> - [hours, minutes]
   # minutes: int - minutes to add

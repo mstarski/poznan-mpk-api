@@ -1,4 +1,4 @@
-# frozen_literal_string: true
+# frozen_string_literal: true
 
 require_relative('./main.rb')
 require 'sinatra'
@@ -9,4 +9,4 @@ configure do
   set :protection, except: [:json_csrf]
 end
 
-run Sinatra::Application
+run Main

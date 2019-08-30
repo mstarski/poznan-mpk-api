@@ -6,22 +6,23 @@ require 'nokogiri'
 require 'open-uri'
 require 'pp'
 
+# Module containing methods for finding departure and arrival
+# informations based on given route and time
 module Timetable
   class << self
+    # Returns detailed time-based information about routes
     def routes(from, to)
       result = []
       routes = FindRoute.route(from, to)
       return { error: true, message: 'Incorrect stop name' } if routes == -1
 
       routes.each do |route|
-        p route
         tmp = [] # Array to hold all transfer information
         # Stop -> #Line -> #Stop ...
         last_stop_index = 0
-        transfer_checkpoint = nil
         ((route.length - 1) / 2).times do
           from, line, to = route.slice(last_stop_index, 3)
-          transfer_checkpoint = get_time(from, to, line, transfer_checkpoint)
+          transfer_checkpoint = get_time(from, to, line, transfer_checkpoint || nil)
           last_stop_index += 2
           # Error only occures when tram takes two different routes in two
           # different directions
@@ -45,7 +46,7 @@ module Timetable
       results
     end
 
-     private
+    private
 
     def get_time(from, to, line, relative_to)
       link = get_departure_info_link(from, to, line)
@@ -77,7 +78,8 @@ module Timetable
             to_meta['href'] = stop['href']
           end
 
-          # We have to make sure both stops are on the route (There are trams that dont go the same way both directions)
+          # We have to make sure both stops are on the route 
+          # (There are trams that dont go the same way both directions)
           if !from_meta['index'].nil? && !to_meta['index'].nil?\
              && from_meta['index'] < to_meta['index'] && !to.nil?
             return from_meta['href']
@@ -96,9 +98,11 @@ module Timetable
       doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
 
       stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
+
       unless dest.nil?
         journey_time = get_journey_time(stops_eta_timetable, dest).to_i
       end
+
       stop_name = doc.css('#MpkThisStop').text
 
       # If we transfer, we have to adjust the next stop's arrival to be in time.
@@ -126,8 +130,6 @@ module Timetable
       # Sundays hour
       # Sundays hours
 
-      day_num_to_name = %w[Sunday Monday Tuesday Thursday
-                           Wednesday Friday Saturday]
       week_metadata = {
         "0": {
           name: 'Sundays',
@@ -144,16 +146,12 @@ module Timetable
       }
 
       # We are getting departure minutes from given hour and day here
-      get_minutes = proc do |timetable, index, shift|
-        timetable[index + shift].text.split(' ')
-      end
+      get_minutes = proc { |timetable, index, shift| timetable[index + shift].text.split(' ') }
 
       # Find the weekdays hour index - html_timetable[index +1/+3/+5] are
       # the weekdays/saturdays/sundays minutes
 
-      index = html_timetable.find_index do |cell|
-        cell.text == time[0].to_s
-      end
+      index = html_timetable.find_index { |cell| cell.text == time[0].to_s }
 
       return -1 if index.nil?
 
@@ -176,15 +174,10 @@ module Timetable
 
         # Prevent from getting a departure that is in the past
         minutes = get_minutes.call(html_timetable, index, day_data[:index_shift])
-        if hour_offset != 0
-          # if we've jumped to the next hour, we can take the first element without
-          # calculating anything since we know it's gonna be the earliest one
-          minutes = minutes[0]
-        else
-          minutes = minutes.find do |m|
-            m.to_i > time[1].to_i
-          end
-        end
+
+        # If we've jumped to the next hour, we can take the first element without
+        # calculating anything since we know it's gonna be the earliest one
+        minutes = hour_offset != 0 ? minutes[0] : minutes.find { |m| m.to_i > time[1].to_i }
 
         # Index + 6 jumps to the next hour in the table
         if minutes.nil?
@@ -219,7 +212,7 @@ module Timetable
       response[:dest] = dest
 
       # Filter out nil fields since we dont need them
-      response.delete_if { |_key, value| value.nil? }
+      response.delete_if { |_, value| value.nil? }
       response
     end
 
@@ -237,9 +230,9 @@ module Timetable
 
       if journey_data.length == 1
         return timetable[timetable.length - 2].text.delete("\n").split('-')[0].to_i + 2
-      else
-        return journey_data[0].to_i
       end
+
+      journey_data[0].to_i
     end
    end
 end
