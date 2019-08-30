@@ -98,9 +98,11 @@ module Timetable
       doc = existing_doc || Nokogiri::HTML(open("http://mpk.poznan.pl#{link}"))
 
       stops_eta_timetable = doc.css('.timetable #MpkThisStop ~ .MpkStopsWrapper')
+
       unless dest.nil?
         journey_time = get_journey_time(stops_eta_timetable, dest).to_i
       end
+
       stop_name = doc.css('#MpkThisStop').text
 
       # If we transfer, we have to adjust the next stop's arrival to be in time.
@@ -228,9 +230,9 @@ module Timetable
 
       if journey_data.length == 1
         return timetable[timetable.length - 2].text.delete("\n").split('-')[0].to_i + 2
-      else
-        return journey_data[0].to_i
       end
+
+      journey_data[0].to_i
     end
    end
 end
