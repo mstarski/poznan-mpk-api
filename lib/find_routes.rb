@@ -8,7 +8,6 @@ require 'pp'
 
 # Module containing methods for finding routes between two given stops
 module FindRoute
-
   class << self
     # Returns an array containing avaliable routes in a format:
     # [ stop1, line_number1, stop1, ... ]

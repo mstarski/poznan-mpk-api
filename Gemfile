@@ -6,6 +6,7 @@ source 'https://rubygems.org' do
   gem 'thin'
 
   group :development do
+    gem 'rspec'
     gem 'rubocop'
     gem 'solargraph'
   end

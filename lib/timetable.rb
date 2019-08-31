@@ -46,7 +46,7 @@ module Timetable
       results
     end
 
-    private
+     private
 
     def get_time(from, to, line, relative_to)
       link = get_departure_info_link(from, to, line)
@@ -78,7 +78,7 @@ module Timetable
             to_meta['href'] = stop['href']
           end
 
-          # We have to make sure both stops are on the route 
+          # We have to make sure both stops are on the route
           # (There are trams that dont go the same way both directions)
           if !from_meta['index'].nil? && !to_meta['index'].nil?\
              && from_meta['index'] < to_meta['index'] && !to.nil?

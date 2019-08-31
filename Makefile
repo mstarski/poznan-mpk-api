@@ -1,4 +1,4 @@
-.PHONY: start scrap build
+.PHONY: start scrap build test
 
 start:
 	docker-compose up	
@@ -8,3 +8,9 @@ scrap:
 
 build: 
 	docker-compose build
+
+test:
+	bundle exec rspec --format documentation
+
+fix:
+	rubocop -x
