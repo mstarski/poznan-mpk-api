@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative '../lib/timetable.rb'
-require_relative '../utils/time-tools.rb'
 
 describe Timetable do
   describe '.routes' do
