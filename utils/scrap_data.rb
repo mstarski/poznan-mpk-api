@@ -1,3 +1,3 @@
 require_relative '../lib/scrapper.rb'
 
-Scrapper.scrap_data 'data'
+Scrapper.scrap_data('data', true)

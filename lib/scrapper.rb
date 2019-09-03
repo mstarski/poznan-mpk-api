@@ -10,7 +10,7 @@ class Scrapper
   # dest: string, path to a dir where the file will be saved (relative to root of a project)
   # data will be saved under dest/ztm_data.json
   # log_info: bool, decides if method should log informations about the scrapping process
-  def self.scrap_data(dest, log_info)
+  def self.scrap_data(dest, log_info=false)
     ztm_data = {
       stops_data: {},
       working_line_numbers: []
