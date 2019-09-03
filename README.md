@@ -1,4 +1,4 @@
-# Poznan MPK API
+# Poznań MPK API
 
 The api scrapps [Poznań City communication webpage](http://www.mpk.poznan.pl) to provide trams' departure times and route planning.
 
@@ -161,3 +161,11 @@ hour: [0-24] - Hour of departure
 is_today: true|false - Is the departure today
 line: int - Line number
 ```
+
+## Testing
+
+You can run tests simply by typing:
+```bash
+$ make test
+```
+**To run tests you have to have your data already scrapped.**
