@@ -10,7 +10,7 @@ RSpec.configure do |config|
   end
 end
 
-RSpec.describe Scrapper do
+describe Scrapper do
   it 'Should properly scrap all the needed data to the file' do
     Scrapper.scrap_data('spec/tmp', false)
     expect(File.file?(File.join(__dir__, 'tmp', 'ztm_data.json'))).to be(true)
