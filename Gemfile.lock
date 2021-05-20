@@ -1,4 +1,7 @@
 GEM
+  specs:
+
+GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.0)
@@ -8,13 +11,15 @@ GEM
     eventmachine (1.2.7)
     htmlentities (4.3.4)
     jaro_winkler (1.5.3)
-    mini_portile2 (2.4.0)
+    mini_portile2 (2.5.1)
     mustermann (1.0.3)
-    nokogiri (1.10.4)
-      mini_portile2 (~> 2.4.0)
+    nokogiri (1.11.4)
+      mini_portile2 (~> 2.5.0)
+      racc (~> 1.4)
     parallel (1.17.0)
     parser (2.6.3.0)
       ast (~> 2.4.0)
+    racc (1.5.2)
     rack (2.0.7)
     rack-protection (2.0.7)
       rack
